@@ -4,11 +4,11 @@ import express from 'express';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.use(cors());
 app.use(express.json());
@@ -78,16 +78,18 @@ Rules:
 - units must be whole numbers`;
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 3000,
-      system: `You are an expert demand forecasting analyst for fresh juice and smoothie bars. You specialize in produce inventory management and waste reduction for high-perishability QSR businesses. You always respond with valid JSON only.`,
-      messages: [{ role: 'user', content: userMessage }]
+      messages: [
+        { role: 'system', content: `You are an expert demand forecasting analyst for fresh juice and smoothie bars. You specialize in produce inventory management and waste reduction for high-perishability QSR businesses. You always respond with valid JSON only.` },
+        { role: 'user', content: userMessage }
+      ]
     });
 
     let forecastData;
     try {
-      const raw = response.content[0].text.trim();
+      const raw = completion.choices[0].message.content.trim();
       // Strip any accidental markdown code fences
       const cleaned = raw.replace(/^```json\n?/, '').replace(/\n?```$/, '');
       forecastData = JSON.parse(cleaned);

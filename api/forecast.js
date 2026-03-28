@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Jerome W. Dewald. All rights reserved.
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   const { salesData, ingredients, contextFactors } = req.body;
   if (!salesData || !ingredients) return res.status(400).json({ error: 'salesData and ingredients required' });
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const today = new Date();
   const next7Days = Array.from({ length: 7 }, (_, i) => {
@@ -37,13 +37,12 @@ Upcoming context:
 - Notes: ${contextFactors.notes || 'none'}` : '';
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 3000,
-      system: `You are an expert demand forecasting analyst for fresh juice and smoothie bars. You specialize in produce inventory management and waste reduction for high-perishability QSR businesses. You always respond with valid JSON only — no markdown, no preamble.`,
-      messages: [{
-        role: 'user',
-        content: `I run a NYC juice bar and need a 7-day demand forecast.
+      messages: [
+        { role: 'system', content: `You are an expert demand forecasting analyst for fresh juice and smoothie bars. You specialize in produce inventory management and waste reduction for high-perishability QSR businesses. You always respond with valid JSON only — no markdown, no preamble.` },
+        { role: 'user', content: `I run a NYC juice bar and need a 7-day demand forecast.
 
 INGREDIENT SALES HISTORY (last 14 days):
 ${salesSummary}
@@ -72,11 +71,11 @@ Rules:
 - risk: "green" within 10% of average, "yellow" 15-30% over-average risk, "red" >30% over-average risk
 - orderSheet qty includes 10% buffer above forecasted weekly demand
 - urgency: "critical" if red, "high" if yellow, "normal" if green
-- units must be whole numbers`
-      }]
+- units must be whole numbers` }
+      ]
     });
 
-    const raw = response.content[0].text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    const raw = completion.choices[0].message.content.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
     let forecastData;
     try {
       forecastData = JSON.parse(raw);
