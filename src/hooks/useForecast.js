@@ -1,14 +1,5 @@
 import { useState } from 'react';
-
-function track(event) {
-  const sid = sessionStorage.getItem('sid') || Math.random().toString(36).slice(2);
-  sessionStorage.setItem('sid', sid);
-  fetch('/api/analytics', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event, sessionId: sid }),
-  }).catch(() => {});
-}
+import { track } from '../analytics.js';
 
 export default function useForecast() {
   const [forecast, setForecast] = useState(null);

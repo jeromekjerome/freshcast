@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { track } from './analytics.js';
 import { INGREDIENTS, SAMPLE_SALES, DEFAULT_CONTEXT } from './data/sampleData.js';
 import DataInput from './components/DataInput.jsx';
 import ForecastOutput from './components/ForecastOutput.jsx';
@@ -11,13 +12,7 @@ export default function App() {
   const { forecast, loading, error, generate } = useForecast();
 
   useEffect(() => {
-    const sid = sessionStorage.getItem('sid') || Math.random().toString(36).slice(2);
-    sessionStorage.setItem('sid', sid);
-    fetch('/api/analytics', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event: 'page_visit', sessionId: sid }),
-    }).catch(() => {});
+    track('page_visit');
   }, []);
 
   const handleGenerate = () => {
