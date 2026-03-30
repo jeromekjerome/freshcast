@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { INGREDIENTS, SAMPLE_SALES, DEFAULT_CONTEXT } from './data/sampleData.js';
 import DataInput from './components/DataInput.jsx';
 import ForecastOutput from './components/ForecastOutput.jsx';
@@ -9,6 +9,16 @@ export default function App() {
   const [ingredients, setIngredients] = useState(INGREDIENTS);
   const [contextFactors, setContextFactors] = useState(DEFAULT_CONTEXT);
   const { forecast, loading, error, generate } = useForecast();
+
+  useEffect(() => {
+    const sid = sessionStorage.getItem('sid') || Math.random().toString(36).slice(2);
+    sessionStorage.setItem('sid', sid);
+    fetch('/api/analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event: 'page_visit', sessionId: sid }),
+    }).catch(() => {});
+  }, []);
 
   const handleGenerate = () => {
     generate(salesData, ingredients, contextFactors);
