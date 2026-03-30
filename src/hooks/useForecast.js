@@ -7,7 +7,7 @@ export default function useForecast() {
   const [error, setError] = useState(null);
 
   const generate = async (salesData, ingredients, contextFactors) => {
-    track('forecast_requested');
+    track('forecast_requested', { app: 'freshcast' });
     setLoading(true);
     setError(null);
     try {
@@ -18,7 +18,7 @@ export default function useForecast() {
       });
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const data = await res.json();
-      track('forecast_received');
+      track('forecast_received', { app: 'freshcast' });
       setForecast(data);
       return data;
     } catch (err) {

@@ -12,7 +12,7 @@ export default function App() {
   const { forecast, loading, error, generate } = useForecast();
 
   useEffect(() => {
-    track('page_visit');
+    track('session_start', { app: 'freshcast' });
   }, []);
 
   const handleGenerate = () => {
