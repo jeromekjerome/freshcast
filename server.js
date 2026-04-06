@@ -104,10 +104,12 @@ Rules:
   }
 });
 
-app.get('*', (req, res) => {
+app.get('/{*path}', (req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3012;
-app.listen(PORT, () => console.log(`FreshCast running on port ${PORT}`));
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => console.log(`FreshCast running on port ${PORT}`));
+}
 export default app;
